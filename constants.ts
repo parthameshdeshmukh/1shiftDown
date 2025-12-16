@@ -1,0 +1,87 @@
+export const BODY_TYPES = ["Hatchback", "Sedan", "Coupe", "SUV", "MUV", "Convertible"];
+export const FUEL_TYPES = ["Petrol", "Diesel", "CNG", "Electric"];
+export const BRANDS = [
+  "Maruti Suzuki",
+  "Hyundai",
+  "Tata",
+  "Mahindra",
+  "Kia",
+  "Toyota",
+  "Honda",
+  "Skoda",
+  "Volkswagen",
+  "MG",
+  "Nissan"
+];
+export const TRANSMISSION_TYPES = ["Manual", "Automatic"];
+export const OWNERSHIP_OPTIONS = ["First Owner", "Second Owner", "Third Owner", "4+ Owners"];
+export const SELLER_BADGES = ["Certified", "Auction"];
+export const CATEGORIES = ["Individual Seller", "Dealer"];
+export const SEAT_COUNTS = [2, 5, 7, 8];
+export const FEATURES = ["Sunroof", "Navigation System", "Airbags", "Alloy Wheels", "Parking Sensors", "Automatic Climate Control"];
+export const COLORS = [
+  { name: 'White', hex: '#F9FAFB' },
+  { name: 'Black', hex: '#111827' },
+  { name: 'Silver', hex: '#D1D5DB' },
+  { name: 'Grey', hex: '#6B7280' },
+  { name: 'Red', hex: '#EF4444' },
+  { name: 'Blue', hex: '#3B82F6' },
+];
+
+export const CAR_IMAGE_FALLBACKS: { [key: string]: string } = {
+  'creta': 'https://upload.wikimedia.org/wikipedia/commons/e/ed/Hyundai_Creta_1.5_Trend_%28SU2id%2C_Indonesia%29_front_view_01.jpg',
+  'seltos': 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Kia_Seltos.png',
+  'harrier': 'https://upload.wikimedia.org/wikipedia/commons/2/27/Tata_Harrier_%28XZ%2B%29_front_view.jpg',
+  'city': 'https://upload.wikimedia.org/wikipedia/commons/2/2e/2020_Honda_City_RS.jpg',
+  'baleno': 'https://upload.wikimedia.org/wikipedia/commons/1/18/2022_Maruti_Suzuki_Baleno_Alpha_%28India%29_front_view_02.jpg',
+  'nexon': 'https://upload.wikimedia.org/wikipedia/commons/9/91/2023_Tata_Nexon_XZA%2B_front_view.jpg',
+  'thar': 'https://upload.wikimedia.org/wikipedia/commons/f/f3/Mahindra_Thar_in_dark_red.jpg',
+  'xuv700': 'https://upload.wikimedia.org/wikipedia/commons/1/1a/2021_Mahindra_XUV700_2.2_AX7_%28India%29_front_view.png',
+  'virtus': 'https://upload.wikimedia.org/wikipedia/commons/9/91/2022_Volkswagen_Virtus_1.5_GT_%28India%29_front_view_01.png',
+  'punch': 'https://upload.wikimedia.org/wikipedia/commons/f/f4/2021_Tata_Punch_Creative_%28India%29_front_view_01.png',
+  'swift': 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Maruti_Suzuki_Swift_2098.JPG',
+  'hector': 'https://upload.wikimedia.org/wikipedia/commons/7/77/MG_Hector_Diesel_%28India%29_front_view.png',
+  'verna': 'https://upload.wikimedia.org/wikipedia/commons/6/65/20100812_hyundai_verna_2.jpg',
+  'ecosport': 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Ford_EcoSport_%28front%29.jpg',
+  'fortuner': 'https://upload.wikimedia.org/wikipedia/commons/c/c5/Toyota_Fortuner_%2817050240683%29.jpg',
+  'innova': 'https://upload.wikimedia.org/wikipedia/commons/8/88/Toyota_Innova_Crysta.jpg',
+  'brezza': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/2022_Maruti_Suzuki_Brezza_ZXi%2B_%28India%29_front_view_02.png',
+  'i20': 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Hyundai_i20.JPG',
+  'venue': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/2020_Hyundai_Venue.jpg',
+  'kushaq': 'https://upload.wikimedia.org/wikipedia/commons/e/e0/2021_%C5%A0koda_Kushaq_%28India%29_front_view.png',
+  'slavia': 'https://upload.wikimedia.org/wikipedia/commons/5/52/2021_%C5%A0koda_Slavia_1.5_TSI_Style_%28India%29_front_view.png',
+  'taigun': 'https://upload.wikimedia.org/wikipedia/commons/6/62/2021_Volkswagen_Taigun_1.5_TSI_GT_%28India%29_front_view_01.png',
+  'kiger': 'https://upload.wikimedia.org/wikipedia/commons/3/30/2021_Renault_Kiger_RXZ_%28India%29_front_view.png',
+  'magnite': 'https://upload.wikimedia.org/wikipedia/commons/3/3f/2020_Nissan_Magnite_front_view_%28India%29_02.png',
+  'wagon r': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Maruti_Wagon_R.jpg',
+  'alto': 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Maruti_Alto_front_view.jpg',
+  'hyryder': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/2022_Maruti_Suzuki_Grand_Vitara_Alpha_Smart_Hybrid_%28India%29_front_view.png/640px-2022_Maruti_Suzuki_Grand_Vitara_Alpha_Smart_Hybrid_%28India%29_front_view.png',
+  'grand vitara': 'https://upload.wikimedia.org/wikipedia/commons/8/82/2022_Maruti_Suzuki_Grand_Vitara_Alpha_Smart_Hybrid_%28India%29_front_view.png',
+  'altroz': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Tata_Altroz_front_20230617.jpg',
+  'exter': 'https://upload.wikimedia.org/wikipedia/commons/f/f4/2021_Tata_Punch_Creative_%28India%29_front_view_01.png',
+  'jimny': 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Suzuki_Jimny%2C_2020_front_01.jpg',
+  'sonet': 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Kia_Sonet_front_view_%28India%29_03.png',
+  'tiago': 'https://upload.wikimedia.org/wikipedia/commons/e/e0/2022_Tata_Tiago_XZA%2B_front_20230512.jpg',
+  'amaze': 'https://upload.wikimedia.org/wikipedia/commons/7/76/Honda_Amaze_front_view.jpg',
+  'dzire': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Maruti_Suzuki_Dzire_VXi_VVT.JPG',
+  'aura': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/2020_Hyundai_Aura_Front.png',
+  'carens': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/2022_Kia_Carens_1.4_%28India%29_front_view_01.jpg',
+  'scorpio': 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Mahindra_Scorpio_N_1662098067527.jpg',
+  'bolero': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Mahindra_Bolero_Double_Cab_Front.JPG',
+  'compass': 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Jeep-Compass.jpg',
+  'c3': 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Citroen_C3.jpg',
+  'glanza': 'https://upload.wikimedia.org/wikipedia/commons/9/93/Toyota_Glanza_%28front%29.jpg',
+  'triber': 'https://upload.wikimedia.org/wikipedia/commons/8/86/2021_Renault_Triber_RXZ_%28Indonesia%29_front_view.jpg',
+  'safari': 'https://upload.wikimedia.org/wikipedia/commons/2/23/Tata_Safari_4x4_front.jpg',
+  'i10': 'https://upload.wikimedia.org/wikipedia/commons/c/c5/2021_Hyundai_Grand_i10_Nios_1.0AT_Standard_red_front_view_in_Brunei.jpg',
+  'fronx': 'https://upload.wikimedia.org/wikipedia/commons/5/52/Suzuki_Fronx_%28front%29.jpg',
+  'kodiaq': 'https://upload.wikimedia.org/wikipedia/commons/e/e0/%C5%A0KODA_Kodiaq.jpg',
+  'tiguan': 'https://upload.wikimedia.org/wikipedia/commons/8/87/Volkswagen_Tiguan_front.jpg',
+  'camry': 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Toyota_Camry_LE.jpg',
+  'xuv300': 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Mahindra_XUV300.jpg',
+  'xuv400': 'https://upload.wikimedia.org/wikipedia/commons/2/2e/2023_Mahindra_XUV_400_EL_EV_%2C_Ashiana_Brahmananda%2C_Jamshedpur%2C_Jharkhand%2C_India_%28_Ank_Kumar%2C_Infosys_Limited_%29_01.jpg',
+  'celerio': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Maruti_Suzuki_Celerio.jpg',
+  'ignis': 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Maruti_Suzuki_Ignis_in_India.jpg',
+  'ertiga': 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Suzuki_Ertiga%2C_MPV_front_view.jpg',
+  'xl6': 'https://upload.wikimedia.org/wikipedia/commons/3/30/Maruti_Suzuki_XL6_%28front%29.jpg',
+};

@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String?
+  phone     String?
+  type      String   // "buy" or "sell"
+  details   String   // JSON string of form data
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id          Int      @id @default(autoincrement())
+  title       String
+  price       String
+  description String?
+  imageUrl    String?
+  specs       String   // JSON string of car specs
+  createdAt   DateTime @default(now())
+}
+
+model Favorite {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  carId       String   // Unique identifier for the car (could be makeModel + variant generic ID)
+  isNew       Boolean  // True if new car recommendation, False if used car listing
+  data        String   // JSON string of car data (to render the card)
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, carId]) // Prevent duplicate likes for same car by same user
+}

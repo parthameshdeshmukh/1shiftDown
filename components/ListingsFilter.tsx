@@ -84,7 +84,8 @@ const DualRangeSlider: React.FC<{
     setValues: (newValues: [number, number]) => void;
     unit: string;
     step: number;
-}> = ({ min, max, values, setValues, unit, step }) => {
+    formatValue?: (val: number) => string;
+}> = ({ min, max, values, setValues, unit, step, formatValue }) => {
     const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newMin = Math.min(Number(e.target.value), values[1] - step);
         setValues([newMin, values[1]]);
@@ -98,12 +99,14 @@ const DualRangeSlider: React.FC<{
     const minPos = ((values[0] - min) / (max - min)) * 100;
     const maxPos = ((values[1] - min) / (max - min)) * 100;
 
+    const displayValue = (val: number) => formatValue ? formatValue(val) : val.toLocaleString('en-IN');
+
     return (
         <div className="space-y-4 pt-2">
             <div className="flex justify-between items-center text-text-primary font-bold font-mono text-sm bg-primary/50 p-2 rounded-lg border border-white/5">
-                <span>{unit}{values[0].toLocaleString('en-IN')}</span>
+                <span>{unit}{displayValue(values[0])}</span>
                 <span className="text-text-secondary">-</span>
-                <span>{unit}{values[1].toLocaleString('en-IN')}</span>
+                <span>{unit}{displayValue(values[1])}</span>
             </div>
             <div className="relative h-2 w-full flex items-center my-4">
                 <div className="relative w-full h-1 bg-white/10 rounded-full">
@@ -178,8 +181,17 @@ const ListingsFilter: React.FC<ListingsFilterProps> = ({ filters, setFilters }) 
             </FilterSection>
 
             <FilterSection title="Model Year">
-                <DualRangeSlider min={2002} max={2025} values={filters.year as [number, number]} setValues={(v) => setFilters(f => ({ ...f, year: v }))} unit="" step={1} />
+                <DualRangeSlider
+                    min={2002}
+                    max={2025}
+                    values={(filters.year || [2002, 2025]) as [number, number]}
+                    setValues={(v) => setFilters(f => ({ ...f, year: v }))}
+                    unit=""
+                    step={1}
+                    formatValue={(val) => String(val)}
+                />
             </FilterSection>
+
 
             <FilterSection title="Kilometer Driven">
                 <DualRangeSlider min={0} max={200000} values={[0, filters.kmsDriven || 200000]} setValues={(v) => setFilters(f => ({ ...f, kmsDriven: v[1] }))} unit="" step={5000} />

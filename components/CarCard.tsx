@@ -38,7 +38,8 @@ const CardImage: React.FC<{ src?: string; alt: string; fuelType?: string; isGene
         if (!src) {
             const fallback = findFallbackImage(alt);
             if (fallback) {
-                setCurrentSrc(fallback);
+                // Use weserv.nl as a proxy to bypass hotlink protection/CORS
+                setCurrentSrc(`https://images.weserv.nl/?url=${encodeURIComponent(fallback)}`);
                 setHasError(false);
             } else {
                 setHasError(true);
@@ -52,7 +53,7 @@ const CardImage: React.FC<{ src?: string; alt: string; fuelType?: string; isGene
     const handleError = () => {
         const fallback = findFallbackImage(alt);
         if (fallback && fallback !== currentSrc) {
-            setCurrentSrc(fallback);
+            setCurrentSrc(`https://images.weserv.nl/?url=${encodeURIComponent(fallback)}`);
             setHasError(false);
         } else {
             setHasError(true);

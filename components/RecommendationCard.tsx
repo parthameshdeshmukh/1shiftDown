@@ -76,7 +76,7 @@ const CarImage: React.FC<{ src?: string; alt: string; type: 'new' | 'used', fuel
         if (!src) {
             const fallback = findFallbackImage(alt);
             if (fallback) {
-                setCurrentSrc(fallback);
+                setCurrentSrc(`https://images.weserv.nl/?url=${encodeURIComponent(fallback)}`);
                 setHasError(false);
             } else {
                 setHasError(true);
@@ -90,7 +90,7 @@ const CarImage: React.FC<{ src?: string; alt: string; type: 'new' | 'used', fuel
     const handleError = () => {
         const fallback = findFallbackImage(alt);
         if (fallback && fallback !== currentSrc) {
-            setCurrentSrc(fallback);
+            setCurrentSrc(`https://images.weserv.nl/?url=${encodeURIComponent(fallback)}`);
             setHasError(false);
         } else {
             setHasError(true);

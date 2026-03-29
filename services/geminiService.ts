@@ -2,17 +2,23 @@
 import { GoogleGenAI, Type, Chat, Modality } from "@google/genai";
 import type { NewCarFormData, NewCarRecommendation, UsedCarFormData, UsedCarListing } from '../types';
 
-if (!process.env.API_KEY) {
-  throw new Error("API_KEY environment variable not set");
-}
+const getApiKey = () => {
+  try {
+    return (import.meta as any).env?.VITE_GEMINI_API_KEY || (import.meta as any).env?.GEMINI_API_KEY || 'MISSING_API_KEY';
+  } catch (e) {
+    return 'MISSING_API_KEY';
+  }
+};
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
+
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:5000';
 
 // --- NEW CAR RECOMMENDATIONS ---
 
-export const getNewCarRecommendations = async (formData: NewCarFormData): Promise<Omit<NewCarRecommendation, 'image'>[]> => {
+export const getNewCarRecommendations = async (formData: NewCarFormData): Promise<NewCarRecommendation[]> => {
   try {
-    const response = await fetch('http://localhost:5000/api/recommendations', {
+    const response = await fetch(`${API_BASE_URL}/api/recommendations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,7 +30,7 @@ export const getNewCarRecommendations = async (formData: NewCarFormData): Promis
       throw new Error(`Server error: ${response.statusText}`);
     }
 
-    return await response.json() as Omit<NewCarRecommendation, 'image'>[];
+    return await response.json() as NewCarRecommendation[];
   } catch (error) {
     console.error("Error fetching new car recommendations:", error);
     throw new Error("Failed to generate new car recommendations.");
@@ -34,9 +40,9 @@ export const getNewCarRecommendations = async (formData: NewCarFormData): Promis
 
 // --- USED CAR LISTINGS ---
 
-export const getUsedCarListings = async (formData: UsedCarFormData): Promise<Omit<UsedCarListing, 'image'>[]> => {
+export const getUsedCarListings = async (formData: UsedCarFormData): Promise<UsedCarListing[]> => {
   try {
-    const response = await fetch('http://localhost:5000/api/listings', {
+    const response = await fetch(`${API_BASE_URL}/api/listings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -48,7 +54,7 @@ export const getUsedCarListings = async (formData: UsedCarFormData): Promise<Omi
       throw new Error(`Server error: ${response.statusText}`);
     }
 
-    return await response.json() as Omit<UsedCarListing, 'image'>[];
+    return await response.json() as UsedCarListing[];
   } catch (error) {
     console.error("Error fetching used car listings:", error);
     throw new Error("Failed to generate used car listings.");
@@ -72,7 +78,7 @@ export const inferCarTypeFromTitle = (title: string): string => {
 // --- CAR IMAGE GENERATION ---
 export const generateCarImage = async (makeModel: string, variant: string, carType: string, year?: number): Promise<string> => {
   try {
-    const response = await fetch('http://localhost:5000/api/generate-image', {
+    const response = await fetch(`${API_BASE_URL}/api/generate-image`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -98,7 +104,7 @@ export const generateCarImage = async (makeModel: string, variant: string, carTy
 
 export const generateListingCarImage = async (carTitle: string, fuelType: string): Promise<string> => {
   try {
-    const response = await fetch('http://localhost:5000/api/generate-image', {
+    const response = await fetch(`${API_BASE_URL}/api/generate-image`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -122,7 +128,7 @@ export const generateListingCarImage = async (carTitle: string, fuelType: string
 
 // --- CHAT BOT ---
 export const startChat = (): Chat => {
-  const chatAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const chatAI = new GoogleGenAI({ apiKey: getApiKey() });
   return chatAI.chats.create({
     model: 'gemini-2.5-flash',
     config: {

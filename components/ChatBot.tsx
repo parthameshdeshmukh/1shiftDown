@@ -21,6 +21,18 @@ const ChatBot: React.FC = () => {
     const newChat = startChat();
     setChat(newChat);
     setMessages([{ role: 'model', text: 'Hello! How can I help you find the perfect car today?' }]);
+    
+    // Global Event Listener for instantly opening ChatBot and pre-filling context
+    const handleOpenChat = (event: CustomEvent) => {
+        setIsOpen(true);
+        if (event.detail?.message) {
+            setInput(event.detail.message);
+            // Auto expand if they requested a specific string integration
+        }
+    };
+    
+    window.addEventListener('openChatBot', handleOpenChat as EventListener);
+    return () => window.removeEventListener('openChatBot', handleOpenChat as EventListener);
   }, []);
 
   const scrollToBottom = () => {

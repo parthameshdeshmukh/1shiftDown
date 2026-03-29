@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FilterPanel from '../components/CarConsultancyForm';
 import RecommendationCard from '../components/RecommendationCard';
 import Loader from '../components/Loader';
 import { NewCarFormData, NewCarRecommendation, UsedCarFormData, UsedCarListing } from '../types';
 import { getNewCarRecommendations, getUsedCarListings, generateCarImage, inferCarTypeFromTitle } from '../services/geminiService';
-import type { Page } from '../App';
-
 const currentYear = new Date().getFullYear();
 
 // --- START: NEW COMPONENT AND DATA FOR RECENT LISTINGS ---
@@ -20,20 +19,13 @@ const Icon: React.FC<{ name: string; className?: string }> = ({ name, className 
     return (<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{icons[name]}</svg>);
 };
 
-const recentUsedCars = [
-  { id: 1, title: '2021 Hyundai Creta SX (O) 1.5', price: '₹12.50 Lakh', kms: '35,000 km', platform: 'Cars24', fuel: 'Petrol', transmission: 'Manual', image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/141115/creta-exterior-right-front-three-quarter-16.jpeg?is-pending-processing=1&q=80' },
-  { id: 2, title: '2022 Kia Seltos GTX Plus 1.4', price: '₹16.80 Lakh', kms: '28,000 km', platform: 'Spinny', fuel: 'Petrol', transmission: 'Automatic', image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/142515/new-seltos-exterior-right-front-three-quarter-2.jpeg?is-pending-processing=1&q=80' },
-  { id: 3, title: '2020 Tata Harrier XT Diesel', price: '₹14.90 Lakh', kms: '40,000 km', platform: 'OLX Autos', fuel: 'Diesel', transmission: 'Manual', image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/102663/harrier-exterior-right-front-three-quarter-2.jpeg?is-pending-processing=1&q=80' },
-  { id: 4, title: '2023 Honda City ZX CVT', price: '₹14.50 Lakh', kms: '10,000 km', platform: 'Spinny', fuel: 'Petrol', transmission: 'Automatic', image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/134287/city-exterior-right-front-three-quarter-2.jpeg?is-pending-processing=1&q=80' },
-];
-
 const fuelIconMap: { [key: string]: string } = { 'Petrol': 'flame', 'Diesel': 'droplets' };
 const transmissionIconMap: { [key: string]: string } = { 'Manual': 'settings', 'Automatic': 'settings' }; // using same icon for simplicity
 
-const RecentCarCard: React.FC<{ car: typeof recentUsedCars[0] }> = ({ car }) => (
+const RecentCarCard: React.FC<{ car: any }> = ({ car }) => (
   <div className="bg-secondary border border-white/10 rounded-xl shadow-lg hover:border-accent/50 transition-all duration-500 overflow-hidden group hover:-translate-y-2">
     <div className="relative">
-      <img src={car.image} alt={car.title} className="w-full h-[180px] object-cover" />
+      <img src={car.generatedImage || car.image} alt={car.title} className="w-full h-[180px] object-cover" />
       <div className="absolute top-4 right-4 bg-primary/50 backdrop-blur-sm text-accent font-bold px-4 py-2 rounded-lg text-lg">
         {car.price}
       </div>
@@ -42,9 +34,9 @@ const RecentCarCard: React.FC<{ car: typeof recentUsedCars[0] }> = ({ car }) => 
       <h3 className="text-xl font-serif font-bold text-text-primary mb-4 truncate">{car.title}</h3>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div className="flex items-center space-x-2"><Icon name="gauge" className="text-accent" /> <span className="text-text-primary">{car.kms}</span></div>
-        <div className="flex items-center space-x-2"><Icon name="mapPin" className="text-accent" /> <span className="text-text-primary">{car.platform}</span></div>
-        <div className="flex items-center space-x-2"><Icon name={fuelIconMap[car.fuel]} className="text-accent" /> <span className="text-text-primary">{car.fuel}</span></div>
-        <div className="flex items-center space-x-2"><Icon name={transmissionIconMap[car.transmission]} className="text-accent" /> <span className="text-text-primary">{car.transmission}</span></div>
+        <div className="flex items-center space-x-2"><Icon name="mapPin" className="text-accent" /> <span className="text-text-primary">{car.location || car.platform || "1Shift Down"}</span></div>
+        <div className="flex items-center space-x-2"><Icon name={fuelIconMap[car.fuel] || 'flame'} className="text-accent" /> <span className="text-text-primary">{car.fuel}</span></div>
+        <div className="flex items-center space-x-2"><Icon name={transmissionIconMap[car.transmission || car.owner] || 'settings'} className="text-accent" /> <span className="text-text-primary">{car.transmission || car.owner}</span></div>
       </div>
     </div>
   </div>
@@ -77,9 +69,6 @@ const initialNewData: NewCarFormData = {
   features: [],
 };
 
-interface ConsultancyPageProps {
-  navigate: (page: Page) => void;
-}
 
 const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
   <button
@@ -106,7 +95,7 @@ const FilterChip: React.FC<{ onRemove: () => void; children: React.ReactNode }> 
   </div>
 );
 
-const ProConsultancyCard = ({ navigate }: { navigate: (page: Page) => void }) => (
+const ProConsultancyCard = ({ navigate }: { navigate: (path: string) => void }) => (
     <div className="bg-gradient-to-br from-secondary to-primary/80 p-8 rounded-xl border-2 border-accent/50 shadow-2xl shadow-accent/10 my-10 text-center">
         <h2 className="text-3xl font-serif font-bold text-accent mb-4">Need a Personal Touch?</h2>
         <p className="text-text-secondary max-w-2xl mx-auto mb-6">Upgrade to our Personalized Consultancy service. Get a dedicated car expert to guide you through the entire process via calls and messages.</p>
@@ -116,7 +105,7 @@ const ProConsultancyCard = ({ navigate }: { navigate: (page: Page) => void }) =>
             <span className="bg-white/10 px-3 py-1 rounded-full text-sm">✓ Negotiation Assistance</span>
         </div>
         <button 
-            onClick={() => navigate('pro-consultancy-booking')}
+            onClick={() => navigate('/pro-consultancy-booking')}
             className="bg-accent text-primary font-bold py-3 px-8 rounded-lg shadow-lg shadow-accent/20 transform transition-transform duration-300 ease-in-out hover:scale-105"
         >
             Book a Session for ₹999
@@ -125,7 +114,12 @@ const ProConsultancyCard = ({ navigate }: { navigate: (page: Page) => void }) =>
 );
 
 
-const ConsultancyPage: React.FC<ConsultancyPageProps> = ({ navigate }) => {
+interface ConsultancyPageProps {
+  listings?: any[];
+}
+
+const ConsultancyPage: React.FC<ConsultancyPageProps> = ({ listings = [] }) => {
+  const navigate = useNavigate();
   const [searchType, setSearchType] = useState<'used' | 'new'>('used');
   const [results, setResults] = useState<(NewCarRecommendation | UsedCarListing)[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -142,42 +136,43 @@ const ConsultancyPage: React.FC<ConsultancyPageProps> = ({ navigate }) => {
     setResults([]);
 
     try {
-      let resultWithoutImages: (Omit<NewCarRecommendation, 'image'> | Omit<UsedCarListing, 'image'>)[];
+      let resultWithImages: (NewCarRecommendation | UsedCarListing)[] = [];
       if (searchType === 'used') {
-        resultWithoutImages = await getUsedCarListings(usedData);
+        const localMatches = listings.filter(car => {
+           // Basic filtering mechanics matching frontend data against local state
+           const budgetMin = usedData.price[0];
+           const budgetMax = usedData.price[1];
+           const rawPriceNum = car.rawPrice || (parseFloat(car.price.replace(/[^0-9.]/g, '')) * 100000);
+           const priceMatch = isNaN(rawPriceNum) || (rawPriceNum >= budgetMin && rawPriceNum <= budgetMax);
+           const brandMatch = usedData.brands.length === 0 || usedData.brands.some(b => car.title.toLowerCase().includes(b.toLowerCase()));
+           
+           return priceMatch && brandMatch;
+        }).map(car => ({
+            makeModel: car.title,
+            variant: 'Verified 1Shift Down Car',
+            price: car.price,
+            platform: '1Shift Down',
+            year: parseInt(car.title.substring(0,4)) || 2022,
+            kmsDriven: car.kms,
+            matchScore: 98, // Prioritize our own internal listings visually
+            link: '/listings',
+            image: car.image || car.generatedImage || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800', // Unsplash Placeholder
+            fuelType: car.fuel
+        }));
+
+        const aiResults = await getUsedCarListings(usedData);
+        resultWithImages = [...localMatches, ...aiResults];
       } else {
-        resultWithoutImages = await getNewCarRecommendations(newData);
+        resultWithImages = await getNewCarRecommendations(newData);
       }
 
-      if (resultWithoutImages.length === 0) {
+      if (resultWithImages.length === 0) {
         setResults([]);
         setIsLoading(false);
         return;
       }
 
-      const resultsWithImages = await Promise.all(
-        resultWithoutImages.map(async (car) => {
-          try {
-            let carType: string;
-            let carYear: number | undefined;
-
-            if (searchType === 'new') {
-                carType = (car as NewCarRecommendation).bodyType || 'car';
-            } else { // 'used'
-                carType = inferCarTypeFromTitle(car.makeModel);
-                carYear = (car as UsedCarListing).year;
-            }
-
-            const generatedImage = await generateCarImage(car.makeModel, car.variant, carType, carYear);
-            return { ...car, image: generatedImage };
-          } catch (e) {
-            console.error(`Failed to generate image for ${car.makeModel}`, e);
-            return { ...car, image: '' }; // Fallback to empty string for the card to handle
-          }
-        })
-      );
-
-      setResults(resultsWithImages as (NewCarRecommendation | UsedCarListing)[]);
+      setResults(resultWithImages);
     } catch (e) {
       setError('Sorry, something went wrong with the recommendation. Please try again.');
       console.error(e);
@@ -253,7 +248,7 @@ const ConsultancyPage: React.FC<ConsultancyPageProps> = ({ navigate }) => {
         <h2 className="text-4xl font-serif font-bold text-center mb-4 text-text-primary">Recently Listed Cars</h2>
         <p className="text-text-secondary text-center max-w-3xl mx-auto mb-12 text-lg">Fresh arrivals from trusted platforms, updated daily.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {recentUsedCars.map((car, index) => (
+            {listings.slice(0, 4).map((car: any, index: number) => (
                 <div key={car.id} className="opacity-0 animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
                     <RecentCarCard car={car} />
                 </div>

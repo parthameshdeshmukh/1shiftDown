@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import type { Page } from '../App';
+import { useNavigate } from 'react-router-dom';
 
-interface ProConsultancyBookingPageProps {
-  navigate: (page: Page) => void;
-}
-
-const ProConsultancyBookingPage: React.FC<ProConsultancyBookingPageProps> = ({ navigate }) => {
+const ProConsultancyBookingPage: React.FC = () => {
+  const navigate = useNavigate();
   const [result, setResult] = useState<string>("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -51,7 +48,7 @@ const ProConsultancyBookingPage: React.FC<ProConsultancyBookingPageProps> = ({ n
               Our car consultant will contact you shortly with personalized recommendations.
             </p>
             <button
-              onClick={() => navigate('home')}
+              onClick={() => navigate('/')}
               className="mt-8 bg-accent/20 hover:bg-accent/30 text-accent font-bold py-3 px-8 rounded-lg transition-colors duration-300"
             >
               Back to Home

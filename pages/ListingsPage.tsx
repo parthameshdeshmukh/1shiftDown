@@ -4,6 +4,7 @@ import ListingsFilter from '../components/ListingsFilter';
 import { UsedCarFormData } from '../types';
 import { generateListingCarImage } from '../services/geminiService';
 import AddListingModal from '../components/AddListingModal';
+import CarDetailsModal from '../components/CarDetailsModal';
 
 interface ListingsPageProps {
     listings: any[];
@@ -20,6 +21,7 @@ const ListingsPage: React.FC<ListingsPageProps> = ({ listings, onAddListing }) =
     });
     const [isAddListingOpen, setIsAddListingOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCar, setSelectedCar] = useState<any | null>(null);
 
     const filteredListings = listings.filter(car =>
         car.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -75,7 +77,7 @@ const ListingsPage: React.FC<ListingsPageProps> = ({ listings, onAddListing }) =
                                     image: typeof car.generatedImage === 'string' ? car.generatedImage : (car.image || ''),
                                     isGenerating: car.isGenerating,
                                     isUsed: true,
-                                }} />
+                                }} onViewDetails={() => setSelectedCar(car)} />
                             </div>
                         ))}
                     </div>
@@ -96,6 +98,12 @@ const ListingsPage: React.FC<ListingsPageProps> = ({ listings, onAddListing }) =
                 isOpen={isAddListingOpen}
                 onClose={() => setIsAddListingOpen(false)}
                 onSubmit={onAddListing}
+            />
+            {/* Full Details Modal for the clicked item */}
+            <CarDetailsModal 
+                isOpen={!!selectedCar} 
+                car={selectedCar} 
+                onClose={() => setSelectedCar(null)} 
             />
         </div>
     );

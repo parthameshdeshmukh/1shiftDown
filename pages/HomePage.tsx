@@ -1,17 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import CarCard from '../components/CarCard';
 import PdiPlanCard from '../components/PdiPlanCard';
-import { Page } from '../App';
-
-const featuredCars = [
-  { id: 1, image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/40087/thar-exterior-right-front-three-quarter-11.jpeg?is-pending-processing=1&q=80', title: 'Mahindra Thar', price: '₹14.30 Lakh', location: 'Delhi', kms: '22,000 km', fuel: 'Diesel', owner: '1st Owner' },
-  { id: 2, image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/130591/fronx-exterior-right-front-three-quarter-109.jpeg?is-pending-processing=1&q=80', title: 'Maruti Suzuki Fronx', price: '₹8.90 Lakh', location: 'Mumbai', kms: '12,500 km', fuel: 'Petrol', owner: '1st Owner' },
-  { id: 3, image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/124013/scorpio-n-exterior-right-front-three-quarter-72.jpeg?is-pending-processing=1&q=80', title: 'Mahindra Scorpio N', price: '₹17.50 Lakh', location: 'Pune', kms: '35,000 km', fuel: 'Diesel', owner: '2nd Owner' },
-  { id: 4, image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/142515/new-seltos-exterior-right-front-three-quarter-2.jpeg?is-pending-processing=1&q=80', title: 'Kia Seltos', price: '₹12.80 Lakh', location: 'Bangalore', kms: '45,000 km', fuel: 'Petrol', owner: '1st Owner' },
-  { id: 5, image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/141115/creta-exterior-right-front-three-quarter-16.jpeg?is-pending-processing=1&q=80', title: 'Hyundai Creta', price: '₹13.10 Lakh', location: 'Chennai', kms: '60,000 km', fuel: 'Diesel', owner: '1st Owner' },
-  { id: 6, image: 'https://imgd.aeplcdn.com/664x374/n/cw/ec/142739/xuv700-exterior-right-front-three-quarter-2.jpeg?is-pending-processing=1&q=80', title: 'Mahindra XUV700', price: '₹19.90 Lakh', location: 'Hyderabad', kms: '18,000 km', fuel: 'Petrol', owner: '1st Owner' },
-];
-
 const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description: string, delay: number }> = ({ icon, title, description, delay }) => (
   <div
     className="bg-secondary p-8 rounded-xl border border-white/5 text-center transition-all duration-500 hover:border-accent/30 hover:shadow-soft hover:-translate-y-2 opacity-0 animate-fade-in-up"
@@ -25,8 +15,12 @@ const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description:
   </div>
 );
 
+interface HomePageProps {
+  listings?: any[];
+}
 
-const HomePage: React.FC<{ navigate: (page: Page) => void; }> = ({ navigate }) => {
+const HomePage: React.FC<HomePageProps> = ({ listings = [] }) => {
+  const navigate = useNavigate();
   return (
     <div>
       {/* Hero Section */}
@@ -37,7 +31,7 @@ const HomePage: React.FC<{ navigate: (page: Page) => void; }> = ({ navigate }) =
           <h1 className="text-5xl md:text-7xl font-serif font-extrabold tracking-tight mb-4 animate-fade-in-down text-text-primary">Buy Smart. Drive Confident.</h1>
           <p className="max-w-3xl mx-auto text-lg md:text-xl text-text-secondary mb-10 animate-fade-in-up [animation-delay:200ms]">India’s trusted platform for used cars, expert inspections, and smart recommendations.</p>
           <div className="animate-fade-in-up [animation-delay:400ms]">
-            <button onClick={() => navigate('consultancy')} className="bg-accent text-primary font-bold py-4 px-10 rounded-xl shadow-glow transform transition-transform duration-300 ease-in-out hover:scale-105 animate-pulse-glow hover:bg-yellow-500">
+            <button onClick={() => navigate('/consultancy')} className="bg-accent text-primary font-bold py-4 px-10 rounded-xl shadow-glow transform transition-transform duration-300 ease-in-out hover:scale-105 animate-pulse-glow hover:bg-yellow-500">
               Try AI Car Recommender
             </button>
           </div>
@@ -77,9 +71,12 @@ const HomePage: React.FC<{ navigate: (page: Page) => void; }> = ({ navigate }) =
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-serif font-bold text-center mb-16 text-text-primary">Featured Used Cars</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredCars.map((car, index) => (
+            {listings.slice(0, 6).map((car: any, index: number) => (
               <div key={car.id} className="opacity-0 animate-fade-in-up" style={{ animationDelay: `${index * 150}ms` }}>
-                <CarCard car={car} />
+                <CarCard car={{
+                    ...car,
+                    image: car.generatedImage || car.image,
+                }} />
               </div>
             ))}
           </div>
@@ -91,7 +88,7 @@ const HomePage: React.FC<{ navigate: (page: Page) => void; }> = ({ navigate }) =
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-serif font-bold text-center mb-4 text-text-primary">Book a Professional Inspection</h2>
           <p className="text-text-secondary text-center max-w-3xl mx-auto mb-16 text-lg">Our certified technicians inspect the car offline. You get a detailed digital report. Peace of mind, guaranteed.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
             <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
               <PdiPlanCard title="Basic" price="60-Point Check" features={["Essential Checks", "Engine & Transmission", "Basic Report"]} />
             </div>
@@ -101,6 +98,11 @@ const HomePage: React.FC<{ navigate: (page: Page) => void; }> = ({ navigate }) =
             <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
               <PdiPlanCard title="Elite" price="90+ & Background" features={["Everything in Premium", "Challan/History Check", "Expert Consultation"]} />
             </div>
+          </div>
+          <div className="text-center font-serif text-xl border-t border-white/10 pt-10">
+            <button onClick={() => navigate('/pdi')} className="bg-accent text-primary font-bold py-4 px-12 rounded-xl shadow-glow transform transition-transform duration-300 ease-in-out hover:scale-105 animate-pulse-glow hover:bg-yellow-500">
+               Book Offline Inspection Now
+            </button>
           </div>
         </div>
       </div>

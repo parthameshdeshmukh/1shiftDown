@@ -14,6 +14,7 @@ interface Car {
 
 interface CarCardProps {
     car: Car;
+    onViewDetails?: () => void;
 }
 
 import { CAR_IMAGE_FALLBACKS } from '../constants';
@@ -31,10 +32,8 @@ const findFallbackImage = (carName: string): string | undefined => {
 const CardImage: React.FC<{ src?: string; alt: string; fuelType?: string; isGenerating?: boolean; isUsed?: boolean; }> = ({ src, alt, fuelType, isGenerating, isUsed }) => {
     const [currentSrc, setCurrentSrc] = useState(src);
     const [hasError, setHasError] = useState(!src);
-    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        setIsLoaded(false);
         if (!src) {
             const fallback = findFallbackImage(alt);
             if (fallback) {
@@ -58,10 +57,6 @@ const CardImage: React.FC<{ src?: string; alt: string; fuelType?: string; isGene
         } else {
             setHasError(true);
         }
-    };
-
-    const handleLoad = () => {
-        setIsLoaded(true);
     };
 
     const fuelIcon = fuelType ? {
@@ -93,24 +88,13 @@ const CardImage: React.FC<{ src?: string; alt: string; fuelType?: string; isGene
                     <p className="text-sm font-semibold text-text-secondary mt-2">Image Not Available</p>
                 </div>
             ) : (
-                <>
-                    {!isLoaded && !isGenerating && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-secondary">
-                            <svg className="animate-spin h-8 w-8 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </div>
-                    )}
-                    <img
-                        src={currentSrc}
-                        alt={alt}
-                        onError={handleError}
-                        onLoad={handleLoad}
-                        referrerPolicy="no-referrer"
-                        className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                    />
-                </>
+                <img
+                    src={currentSrc}
+                    alt={alt}
+                    onError={handleError}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                />
             )}
 
             {!isGenerating && !hasError && (
@@ -133,7 +117,7 @@ const CardImage: React.FC<{ src?: string; alt: string; fuelType?: string; isGene
 };
 
 
-const CarCard: React.FC<CarCardProps> = ({ car }) => {
+const CarCard: React.FC<CarCardProps> = ({ car, onViewDetails }) => {
     return (
         <div className="bg-secondary rounded-xl overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-soft border border-white/5 hover:border-gold-muted/50">
             <div className="relative">
@@ -171,7 +155,11 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
 
                 <div className="flex gap-3">
                     <button
-                        onClick={() => alert("Chat functionality coming soon!")}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const message = `Hi! I want to ask some questions regarding the ${car.title} listed for ${car.price} at ${car.location}.`;
+                            window.dispatchEvent(new CustomEvent('openDealerChat', { detail: { message, carTitle: car.title } }));
+                        }}
                         className="flex-1 py-3 text-center text-sm font-semibold text-text-primary border border-white/20 rounded-lg hover:border-accent hover:text-accent transition-all duration-300 flex items-center justify-center gap-2"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,7 +168,10 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
                         Chat
                     </button>
                     <div
-                        onClick={() => alert("Detailed view implementation is in progress! Try the AI Consultant for full recommendations.")}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (onViewDetails) onViewDetails();
+                        }}
                         className="flex-1 py-3 text-center text-sm font-bold text-primary bg-accent rounded-lg hover:bg-yellow-500 hover:shadow-glow transition-all duration-300 cursor-pointer flex items-center justify-center"
                     >
                         View Details

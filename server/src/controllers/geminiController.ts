@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { GoogleGenAI, Type, Chat, Modality } from "@google/genai";
 
-const apiKey = process.env.API_KEY;
-if (!apiKey) {
-    console.warn("API_KEY environment variable not set in server");
-}
-
-const ai = new GoogleGenAI({ apiKey: apiKey || '' });
+const getAI = () => {
+    const key = process.env.API_KEY;
+    if (!key) {
+        console.warn("API_KEY environment variable not set in server");
+    }
+    return new GoogleGenAI({ apiKey: key || '' });
+};
 
 // Types (Mirrored from frontend types for now, ideally shared)
 interface NewCarFormData {
@@ -64,6 +65,7 @@ const generateNewCarPrompt = (formData: NewCarFormData): string => {
     7.  A valid link to the manufacturer or a major car portal.
     8.  The primary fuel type (e.g., "Petrol", "Diesel", "Electric", "CNG").
     9.  The primary body type (e.g., "SUV", "Sedan", "Hatchback").
+    10. A valid image link of this exact car model sold from 2010 to 2026 (provide a reliable public URL like from Wikipedia Commons or CarWale).
     
     Output a JSON array of objects. If no matches, return an empty array.
   `;
@@ -74,6 +76,7 @@ export const getNewCarRecommendations = async (req: Request, res: Response) => {
         const formData: NewCarFormData = req.body;
         const prompt = generateNewCarPrompt(formData);
 
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -94,18 +97,23 @@ export const getNewCarRecommendations = async (req: Request, res: Response) => {
                             matchScore: { type: Type.NUMBER },
                             fuelType: { type: Type.STRING },
                             bodyType: { type: Type.STRING },
+                            image: { type: Type.STRING },
                         },
-                        required: ['makeModel', 'variant', 'price', 'mileage', 'reasons', 'link', 'topFeatures', 'matchScore', 'fuelType', 'bodyType'],
+                        required: ['makeModel', 'variant', 'price', 'mileage', 'reasons', 'link', 'topFeatures', 'matchScore', 'fuelType', 'bodyType', 'image'],
                     },
                 },
             },
         });
 
-        const jsonStr = response.text ? response.text.trim() : "[]";
+        let jsonStr = response.text ? response.text.trim() : "[]";
+        if (jsonStr.startsWith('```json')) jsonStr = jsonStr.slice(7);
+        if (jsonStr.startsWith('```')) jsonStr = jsonStr.slice(3);
+        if (jsonStr.endsWith('```')) jsonStr = jsonStr.slice(0, -3);
+        jsonStr = jsonStr.trim();
         res.json(JSON.parse(jsonStr));
     } catch (error) {
         console.error("Error fetching new car recommendations:", error);
-        res.status(500).json({ error: "Failed to generate new car recommendations." });
+        res.status(500).json({ error: "Failed to generate new car recommendations.", details: error instanceof Error ? error.message : String(error) });
     }
 };
 
@@ -134,6 +142,7 @@ const generateUsedCarPrompt = (formData: UsedCarFormData): string => {
     For each listing, provide: make/model, variant, listed price (INR), platform, year, and kms driven.
     Also provide the primary fuel type, a strict "match score" (0-100%) of how well it fits ALL criteria, and a URL.
     The listed price for each car MUST be within the user's specified range.
+    Finally, provide a valid public image link of this exact car model sold from 2010 to 2026.
     Output a JSON array of objects. Format price with "₹" and lakh/crore units. If no matches, return an empty array.
   `;
 };
@@ -143,6 +152,7 @@ export const getUsedCarListings = async (req: Request, res: Response) => {
         const formData: UsedCarFormData = req.body;
         const prompt = generateUsedCarPrompt(formData);
 
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -162,18 +172,23 @@ export const getUsedCarListings = async (req: Request, res: Response) => {
                             matchScore: { type: Type.NUMBER },
                             link: { type: Type.STRING },
                             fuelType: { type: Type.STRING },
+                            image: { type: Type.STRING },
                         },
-                        required: ['makeModel', 'variant', 'price', 'platform', 'year', 'kmsDriven', 'matchScore', 'link', 'fuelType'],
+                        required: ['makeModel', 'variant', 'price', 'platform', 'year', 'kmsDriven', 'matchScore', 'link', 'fuelType', 'image'],
                     },
                 },
             },
         });
 
-        const jsonStr = response.text ? response.text.trim() : "[]";
+        let jsonStr = response.text ? response.text.trim() : "[]";
+        if (jsonStr.startsWith('```json')) jsonStr = jsonStr.slice(7);
+        if (jsonStr.startsWith('```')) jsonStr = jsonStr.slice(3);
+        if (jsonStr.endsWith('```')) jsonStr = jsonStr.slice(0, -3);
+        jsonStr = jsonStr.trim();
         res.json(JSON.parse(jsonStr));
     } catch (error) {
         console.error("Error fetching used car listings:", error);
-        res.status(500).json({ error: "Failed to generate used car listings." });
+        res.status(500).json({ error: "Failed to generate used car listings.", details: error instanceof Error ? error.message : String(error) });
     }
 };
 
@@ -243,8 +258,9 @@ export const generateCarImage = async (req: Request, res: Response) => {
         }
 
 
+        const ai = getAI();
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
+            model: 'gemini-2.5-flash',
             contents: {
                 parts: [{ text: prompt }],
             },

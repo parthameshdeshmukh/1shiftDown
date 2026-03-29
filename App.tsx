@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatBot from './components/ChatBot';
+import DealerChatModal from './components/DealerChatModal';
 
 // Import page components
 import HomePage from './pages/HomePage';
@@ -12,15 +14,12 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import ProConsultancyBookingPage from './pages/ProConsultancyBookingPage';
 
-export type Page = 'home' | 'listings' | 'pdi' | 'consultancy' | 'dashboard' | 'login' | 'pro-consultancy-booking';
-
 import { carsData } from './data/cars';
 import { generateListingCarImage } from './services/geminiService';
 
 // ... existing imports
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('home');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -28,28 +27,12 @@ const App: React.FC = () => {
   const [listings, setListings] = useState(
     carsData.map(car => ({
       ...car,
-      generatedImage: null as string | null,
-      isGenerating: true,
+      generatedImage: car.image,
+      isGenerating: false,
     }))
   );
-  const [imagesInitialized, setImagesInitialized] = useState(false);
-
-  useEffect(() => {
-    if (imagesInitialized) return;
-    setImagesInitialized(true);
-
-    listings.forEach(async (car) => {
-      if (car.generatedImage === null && car.isGenerating) {
-        try {
-          const imageUrl = await generateListingCarImage(car.title, car.fuel);
-          setListings(prev => prev.map(c => c.id === car.id ? { ...c, generatedImage: imageUrl, isGenerating: false } : c));
-        } catch (error) {
-          // console.error(`Failed to generate image for ${car.title}:`, error); // Suppress log spam
-          setListings(prev => prev.map(c => c.id === car.id ? { ...c, isGenerating: false } : c));
-        }
-      }
-    });
-  }, [imagesInitialized]); // Removed listings dep to prevent loop
+  // Ensure listings have fallbacks natively without spamming the backend
+  const [imagesInitialized, setImagesInitialized] = useState(true);
 
   const handleAddListing = (newListing: any) => {
     // Ensure price is treated as a number for formatting
@@ -96,46 +79,41 @@ const App: React.FC = () => {
     alert("Listing updated successfully!");
   };
 
-  const navigate = (page: Page) => {
-    setCurrentPage(page);
-    window.scrollTo(0, 0); // Scroll to top on page change
+  const handleDeleteListing = (id: number) => {
+    setListings(prev => prev.filter(listing => listing.id !== id));
+    alert("Listing deleted successfully!");
   };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-    navigate('dashboard');
   };
 
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <HomePage navigate={navigate} />;
-      case 'listings':
-        return <ListingsPage listings={listings} onAddListing={handleAddListing} />;
-      case 'pdi':
-        return <PdiPage />;
-      case 'consultancy':
-        return <ConsultancyPage navigate={navigate} />;
-      case 'dashboard':
-        return <DashboardPage listings={listings} onAddListing={handleAddListing} />;
-      case 'login':
-        return <LoginPage navigate={navigate} onLogin={handleLogin} />;
-      case 'pro-consultancy-booking':
-        return <ProConsultancyBookingPage navigate={navigate} />;
-      default:
-        return <HomePage navigate={navigate} />;
-    }
+  const handleLogout = () => {
+    setIsLoggedIn(false);
   };
 
   return (
-    <div className="bg-primary min-h-screen font-sans text-text-primary flex flex-col">
-      <Header currentPage={currentPage} navigate={navigate} isScrolled={isScrolled} isLoggedIn={isLoggedIn} />
-      <main className="flex-grow">
-        {renderPage()}
-      </main>
-      <Footer />
-      <ChatBot />
-    </div>
+    <Router>
+      <div className="bg-primary min-h-screen font-sans text-text-primary flex flex-col">
+        <Header isScrolled={isScrolled} isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<HomePage listings={listings} />} />
+            <Route path="/home" element={<Navigate to="/" replace />} />
+            <Route path="/listings" element={<ListingsPage listings={listings} onAddListing={handleAddListing} />} />
+            <Route path="/pdi" element={<PdiPage />} />
+            <Route path="/consultancy" element={<ConsultancyPage listings={listings} />} />
+            <Route path="/dashboard" element={isLoggedIn ? <DashboardPage listings={listings} onAddListing={handleAddListing} onDeleteListing={handleDeleteListing} onUpdateListing={handleUpdateListing} /> : <Navigate to="/login" replace />} />
+            <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+            <Route path="/pro-consultancy-booking" element={<ProConsultancyBookingPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+        <Footer />
+        <ChatBot />
+        <DealerChatModal />
+      </div>
+    </Router>
   );
 };
 

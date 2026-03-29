@@ -41,12 +41,12 @@ const Radio: React.FC<{ label: string; name: string; checked?: boolean; }> = ({ 
 
 const BodyTypeIcon = ({ type }: { type: string }) => {
     const icons: { [key: string]: string } = {
-        'SUV': "https://imgd.aeplcdn.com/0x0/cw/body/svg/suv_1626338830202.svg?v=1",
-        'Sedan': "https://imgd.aeplcdn.com/0x0/cw/body/svg/sedan_1626338827438.svg?v=1",
-        'Hatchback': "https://imgd.aeplcdn.com/0x0/cw/body/svg/hatchback_1626338820977.svg?v=1",
-        'MUV': "https://imgd.aeplcdn.com/0x0/cw/body/svg/muv_1626338825222.svg?v=1",
-        'Minivan': "https://imgd.aeplcdn.com/0x0/cw/body/svg/minivan_1626338824242.svg?v=1",
-        'Coupe': "https://imgd.aeplcdn.com/0x0/cw/body/svg/coupe_1626338817650.svg?v=1",
+        // 'SUV': "https://imgd.aeplcdn.com/0x0/cw/body/svg/suv_1626338830202.svg?v=1",
+        // 'Sedan': "https://imgd.aeplcdn.com/0x0/cw/body/svg/sedan_1626338827438.svg?v=1",
+        // 'Hatchback': "https://imgd.aeplcdn.com/0x0/cw/body/svg/hatchback_1626338820977.svg?v=1",
+        // 'MUV': "https://imgd.aeplcdn.com/0x0/cw/body/svg/muv_1626338825222.svg?v=1",
+        // 'Minivan': "https://imgd.aeplcdn.com/0x0/cw/body/svg/minivan_1626338824242.svg?v=1",
+        // 'Coupe': "https://imgd.aeplcdn.com/0x0/cw/body/svg/coupe_1626338817650.svg?v=1",
     };
     if (!icons[type]) return null;
     return <div className="w-12 h-8 flex items-center justify-center rounded bg-white/5 p-1"><img src={icons[type]} alt={type} className="h-full opacity-70 contrast-0 grayscale invert" /></div>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import IndividualDashboard from '../components/dashboard/IndividualDashboard';
 import DealerDashboard from '../components/dashboard/DealerDashboard';
+import SellerDashboard from '../components/dashboard/SellerDashboard';
 import AddListingModal from '../components/AddListingModal';
 
-export type UserRole = 'individual' | 'dealer';
+export type UserRole = 'individual' | 'dealer' | 'seller';
 
 interface DashboardPageProps {
   listings?: any[];
@@ -62,6 +63,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
           onDeleteListing={onDeleteListing}
           onEditListing={handleEditClick}
         />;
+      case 'seller':
+        return <SellerDashboard
+          onAddListingClick={() => setIsAddListingOpen(true)}
+          listings={listings}
+          onDeleteListing={onDeleteListing}
+          onEditListing={handleEditClick}
+        />;
       default:
         return <IndividualDashboard
           onAddListingClick={() => setIsAddListingOpen(true)}
@@ -88,6 +96,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         <div className="bg-secondary/50 border border-white/5 rounded-xl p-1 flex gap-1 shadow-soft">
           <RoleButton role="individual" label="Individual View" />
           <RoleButton role="dealer" label="Dealer View" />
+          <RoleButton role="seller" label="Seller View" />
         </div>
       </div>
 

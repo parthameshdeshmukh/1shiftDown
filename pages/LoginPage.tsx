@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import type { Page } from '../App';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginPageProps {
-    navigate: (page: Page) => void;
     onLogin: () => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ navigate, onLogin }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+    const navigate = useNavigate();
     const [formType, setFormType] = useState<'login' | 'register'>('login');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
         <button
@@ -23,9 +26,23 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigate, onLogin }) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would handle login/registration logic
-        console.log('Form submitted');
-        onLogin();
+        setError('');
+
+        const adminEmail = (import.meta as any).env.VITE_ADMIN_EMAIL || 'admin@1shift.com';
+        const adminPassword = (import.meta as any).env.VITE_ADMIN_PASSWORD || 'admin123';
+
+        if (formType === 'login') {
+            if (email === adminEmail && password === adminPassword) {
+                onLogin();
+                navigate('/dashboard');
+            } else {
+                setError('Invalid email or password. Please try again.');
+            }
+        } else {
+            // Allow registration to automatically log the user in for the demo
+            onLogin();
+            navigate('/dashboard');
+        }
     }
 
     return (
@@ -38,14 +55,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigate, onLogin }) => {
 
                 {formType === 'login' ? (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <h2 className="text-3xl font-serif font-bold text-center text-text-primary mb-6">Welcome Back</h2>
+                        <div className="text-center mb-6">
+                            <h2 className="text-3xl font-serif font-bold text-text-primary mb-2">Welcome Back</h2>
+                            <p className="text-xs text-text-secondary bg-primary/30 py-2 px-4 rounded-lg inline-block border border-white/5">
+                                Demo Login: <strong className="text-accent">admin@1shift.com</strong> / <strong className="text-accent">admin123</strong>
+                            </p>
+                        </div>
+                        {error && <div className="bg-red-900/50 border border-red-700 text-red-300 p-3 rounded-lg text-sm text-center">{error}</div>}
                         <div>
                             <label className="text-sm font-medium text-text-secondary mb-2 block">Email Address</label>
-                            <input type="email" required className="form-input" />
+                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="form-input" />
                         </div>
                         <div>
                             <label className="text-sm font-medium text-text-secondary mb-2 block">Password</label>
-                            <input type="password" required className="form-input" />
+                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="form-input" />
                         </div>
                         <button type="submit" className="w-full bg-accent hover:bg-yellow-500 text-primary font-bold py-3 px-4 rounded-xl shadow-glow transition-all">
                             Login

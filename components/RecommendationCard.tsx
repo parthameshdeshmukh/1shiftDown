@@ -156,52 +156,53 @@ const FavoriteButton: React.FC<{ isLiked: boolean; toggle: () => void }> = ({ is
 
 const NewCarCard: React.FC<{ recommendation: NewCarRecommendation; isLiked: boolean; onToggle: () => void }> = ({ recommendation, isLiked, onToggle }) => {
     return (
-        <div className="bg-secondary border border-white/5 rounded-xl shadow-soft hover:border-accent/30 transition-all duration-300 overflow-hidden flex flex-col group relative">
-            <div className="relative">
-                <CarImage src={recommendation.image} alt={recommendation.makeModel} type="new" fuelType={recommendation.fuelType} />
-                <FavoriteButton isLiked={isLiked} toggle={onToggle} />
-            </div>
-            <div className="p-8 flex flex-col flex-grow">
-                <div className="absolute top-4 right-4 bg-primary/50 backdrop-blur-sm text-accent font-bold px-4 py-2 rounded-lg text-lg">
+        <div className="bg-secondary border border-white/5 rounded-xl shadow-soft hover:border-accent/40 transition-all duration-300 overflow-hidden flex flex-col group relative p-6 md:p-8">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                <div className="flex-grow">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-text-primary">{recommendation.makeModel}</h3>
+                            <p className="text-accent font-semibold text-sm md:text-base mt-1">
+                                {recommendation.variant} <span className="text-white/30 mx-2">•</span> {recommendation.fuelType} <span className="text-white/30 mx-2">•</span> {recommendation.bodyType}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-primary/80 border border-accent/20 text-accent font-bold px-6 py-2 rounded-lg text-xl md:text-2xl shadow-inner whitespace-nowrap">
                     {recommendation.price}
                 </div>
-                <div className="flex-grow">
-                    <div className="mb-6">
-                        <a href={recommendation.link} target="_blank" rel="noopener noreferrer" className="group/link inline-block">
-                            <h3 className="text-3xl font-serif font-bold text-text-primary group-hover/link:text-accent transition-colors duration-300">{recommendation.makeModel}</h3>
-                        </a>
-                        <p className="text-text-secondary flex items-center space-x-2 mt-1">
-                            <Icon name="tag" className="text-text-secondary" />
-                            <span>{recommendation.variant}</span>
-                        </p>
-                    </div>
+            </div>
 
-                    <div className="flex items-center space-x-3 bg-white/5 text-text-secondary px-4 py-2 rounded-lg mb-6">
-                        <Icon name="gauge" className="text-accent" />
-                        <span className="text-sm font-medium text-text-primary">{recommendation.mileage}</span>
-                    </div>
-
-                    <div>
-                        <h4 className="font-semibold text-text-primary text-base mb-3">Why it's a great fit:</h4>
-                        <ul className="space-y-2">
-                            {recommendation.reasons.map((reason, index) => (
-                                <li key={index} className="flex items-start">
-                                    <svg className="flex-shrink-0 h-5 w-5 text-accent mr-3 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="text-text-secondary">{reason}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+            <div className="bg-primary/30 border border-white/5 p-5 rounded-lg mb-6">
+                <div className="flex items-center space-x-2 mb-4 pb-3 border-b border-white/5">
+                    <Icon name="gauge" className="text-accent" />
+                    <span className="text-sm font-medium text-text-primary">Expected Mileage: {recommendation.mileage}</span>
                 </div>
+                <div>
+                    <h4 className="font-semibold text-text-primary text-sm mb-3">Why it's a great fit:</h4>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {recommendation.reasons.map((reason, index) => (
+                            <li key={index} className="flex items-start text-sm text-text-secondary">
+                                <Icon name="check" className="w-4 h-4 text-accent mr-2 flex-shrink-0 mt-0.5" />
+                                <span>{reason}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
 
-                <div className="mt-8 pt-6 border-t border-white/10">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6 mt-auto">
+                <div className="flex-grow w-full md:w-2/3">
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-text-primary">Match Score</h4>
+                        <h4 className="text-sm font-semibold text-text-secondary">AI Match Confidence</h4>
                         <span className="font-bold text-accent text-lg">{recommendation.matchScore}%</span>
                     </div>
                     <AnimatedMatchScoreBar score={recommendation.matchScore} />
+                </div>
+                <div className="w-full md:w-1/3 flex-shrink-0">
+                    <a href={recommendation.link} target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-accent hover:bg-yellow-500 text-primary font-bold py-3 px-6 rounded-xl shadow-glow transition-all transform hover:-translate-y-1">
+                        View Manufacturer Page
+                    </a>
                 </div>
             </div>
         </div>
@@ -210,51 +211,52 @@ const NewCarCard: React.FC<{ recommendation: NewCarRecommendation; isLiked: bool
 
 const UsedCarCard: React.FC<{ listing: UsedCarListing; isLiked: boolean; onToggle: () => void }> = ({ listing, isLiked, onToggle }) => {
     return (
-        <div className="bg-secondary border border-white/5 rounded-xl shadow-soft hover:border-accent/30 transition-all duration-300 overflow-hidden flex flex-col group relative">
-            <div className="relative">
-                <CarImage src={listing.image} alt={listing.makeModel} type="used" fuelType={listing.fuelType} />
-                <FavoriteButton isLiked={isLiked} toggle={onToggle} />
-            </div>
-            <div className="p-8 flex flex-col flex-grow">
-                <div className="absolute top-4 right-4 bg-primary/50 backdrop-blur-sm text-accent font-bold px-4 py-2 rounded-lg text-lg">
+        <div className="bg-secondary border border-white/5 rounded-xl shadow-soft hover:border-accent/40 transition-all duration-300 overflow-hidden flex flex-col group relative p-6 md:p-8">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                <div className="flex-grow">
+                    <div className="flex items-center space-x-3 mb-1">
+                        <h3 className="text-2xl md:text-3xl font-serif font-bold text-text-primary">{listing.makeModel}</h3>
+                        {listing.platform === '1Shift Down' && (
+                            <span className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-bold px-2 py-1 rounded">Verified 1Shift Down</span>
+                        )}
+                    </div>
+                    <p className="text-accent font-semibold text-sm md:text-base">{listing.variant}</p>
+                </div>
+                <div className="bg-primary/80 border border-accent/20 text-accent font-bold px-6 py-2 rounded-lg text-xl md:text-2xl shadow-inner whitespace-nowrap">
                     {listing.price}
                 </div>
-                <div className="flex-grow">
-                    <div className="mb-6">
-                        <h3 className="text-3xl font-serif font-bold text-text-primary">{listing.makeModel}</h3>
-                        <p className="text-text-secondary flex items-center space-x-2 mt-1">
-                            <Icon name="tag" className="text-text-secondary" />
-                            <span>{listing.variant}</span>
-                        </p>
-                    </div>
+            </div>
 
-                    <div className="space-y-4 text-text-secondary mb-6 border-y border-white/10 py-6">
-                        <div className="flex items-center space-x-3 group/icon">
-                            <Icon name="calendar" className="text-accent group-hover/icon:text-white transition-colors" />
-                            <span className="font-medium text-text-primary">{listing.year}</span>
-                        </div>
-                        <div className="flex items-center space-x-3 group/icon">
-                            <Icon name="gauge" className="text-accent group-hover/icon:text-white transition-colors" />
-                            <span className="font-medium text-text-primary">{listing.kmsDriven}</span>
-                        </div>
-                        <div className="flex items-center space-x-3 group/icon">
-                            <Icon name="mapPin" className="text-accent group-hover/icon:text-white transition-colors" />
-                            <span className="font-medium text-text-primary">{listing.platform}</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div className="flex justify-between items-center mb-2">
-                            <h4 className="font-semibold text-text-primary">Match Score</h4>
-                            <span className="font-bold text-accent text-lg">{listing.matchScore}%</span>
-                        </div>
-                        <AnimatedMatchScoreBar score={listing.matchScore} />
-                    </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-primary/30 border border-white/5 p-5 rounded-lg mb-6 text-sm">
+                <div className="flex items-center space-x-2 text-text-secondary">
+                    <Icon name="calendar" className="text-accent" />
+                    <span className="font-medium text-text-primary">{listing.year} Model</span>
                 </div>
+                <div className="flex items-center space-x-2 text-text-secondary">
+                    <Icon name="gauge" className="text-accent" />
+                    <span className="font-medium text-text-primary">{listing.kmsDriven}</span>
+                </div>
+                <div className="flex items-center space-x-2 text-text-secondary">
+                    <Icon name="tag" className="text-accent" />
+                    <span className="font-medium text-text-primary">{listing.fuelType || 'Petrol'}</span>
+                </div>
+                <div className="flex items-center space-x-2 text-text-secondary">
+                    <Icon name="mapPin" className="text-accent" />
+                    <span className="font-medium text-text-primary">Source: {listing.platform}</span>
+                </div>
+            </div>
 
-                <div className="mt-auto pt-6">
-                    <a href={listing.link} target="_blank" rel="noopener noreferrer" className="w-full block text-center bg-accent hover:opacity-90 text-primary font-bold py-3 px-4 rounded-xl shadow-glow transition-all duration-300 transform hover:-translate-y-0.5">
-                        View Listing
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6 mt-auto">
+                <div className="flex-grow w-full md:w-2/3">
+                    <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-sm font-semibold text-text-secondary">AI Match Confidence</h4>
+                        <span className="font-bold text-accent text-lg">{listing.matchScore}%</span>
+                    </div>
+                    <AnimatedMatchScoreBar score={listing.matchScore} />
+                </div>
+                <div className="w-full md:w-1/3 flex-shrink-0">
+                    <a href={listing.link} target="_blank" rel="noopener noreferrer" className="block w-full text-center bg-accent hover:bg-yellow-500 text-primary font-bold py-3 px-6 rounded-xl shadow-glow transition-all transform hover:-translate-y-1">
+                        View Exact Listing
                     </a>
                 </div>
             </div>

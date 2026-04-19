@@ -139,14 +139,28 @@ const ConsultancyPage: React.FC<ConsultancyPageProps> = ({ listings = [] }) => {
       let resultWithImages: (NewCarRecommendation | UsedCarListing)[] = [];
       if (searchType === 'used') {
         const localMatches = listings.filter(car => {
-           // Basic filtering mechanics matching frontend data against local state
            const budgetMin = usedData.price[0];
            const budgetMax = usedData.price[1];
            const rawPriceNum = car.rawPrice || (parseFloat(car.price.replace(/[^0-9.]/g, '')) * 100000);
            const priceMatch = isNaN(rawPriceNum) || (rawPriceNum >= budgetMin && rawPriceNum <= budgetMax);
-           const brandMatch = usedData.brands.length === 0 || usedData.brands.some(b => car.title.toLowerCase().includes(b.toLowerCase()));
-           
-           return priceMatch && brandMatch;
+           const brandMatch = usedData.brands.length === 0 || usedData.brands.some(b => {
+               const bLower = b.toLowerCase().replace('maruti suzuki', 'maruti');
+               return car.title.toLowerCase().includes(bLower) || bLower.includes(car.title.toLowerCase().split(' ')[1] || '');
+           });
+           const modelMatch = !usedData.model || car.title.toLowerCase().includes(usedData.model.toLowerCase());
+           const carYear = parseInt(car.title.substring(0,4)) || 0;
+           const yearMatch = carYear === 0 || (carYear >= usedData.year[0] && carYear <= usedData.year[1]);
+           const fuelMatch = usedData.fuelTypes.length === 0 || usedData.fuelTypes.some(f => car.fuel.toLowerCase() === f.toLowerCase());
+           const transmissionMatch = usedData.transmission.length === 0 || usedData.transmission.some(t => car.transmission ? car.transmission.toLowerCase() === t.toLowerCase() : true);
+           const rawKms = car.rawKms || (parseFloat((car.kms || '').toString().replace(/[^0-9]/g, '')));
+           const kmsMatch = isNaN(rawKms) || rawKms <= usedData.kmsDriven;
+           const ownerMatch = usedData.ownerCount.length === 0 || usedData.ownerCount.some(o => {
+               const oLower = o.toLowerCase().replace('first ', '1st ').replace('second ', '2nd ').replace('third ', '3rd ');
+               return car.owner && car.owner.toLowerCase().includes(oLower);
+           });
+           const locationMatch = !usedData.location || (car.location && car.location.toLowerCase().includes(usedData.location.toLowerCase()));
+
+           return priceMatch && brandMatch && modelMatch && yearMatch && fuelMatch && transmissionMatch && kmsMatch && ownerMatch && locationMatch;
         }).map(car => ({
             makeModel: car.title,
             variant: 'Verified 1Shift Down Car',
@@ -155,15 +169,31 @@ const ConsultancyPage: React.FC<ConsultancyPageProps> = ({ listings = [] }) => {
             year: parseInt(car.title.substring(0,4)) || 2022,
             kmsDriven: car.kms,
             matchScore: 98, // Prioritize our own internal listings visually
-            link: '/listings',
+            link: `/listings?id=${car.id}`,
             image: car.image || car.generatedImage || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800', // Unsplash Placeholder
             fuelType: car.fuel
         }));
 
-        const aiResults = await getUsedCarListings(usedData);
+        let aiResults: UsedCarListing[] = [];
+        try {
+          aiResults = await getUsedCarListings(usedData);
+        } catch (apiError) {
+          console.warn("AI used car mapping failed, falling back to local results only", apiError);
+          if (localMatches.length === 0) {
+              setError("The AI service is temporarily overloaded, and we don't have any exact matches in our offline branch for those specific filters. Please broaden your search or try again in a few seconds.");
+              setResults([]);
+              setIsLoading(false);
+              return;
+          }
+        }
         resultWithImages = [...localMatches, ...aiResults];
       } else {
-        resultWithImages = await getNewCarRecommendations(newData);
+        try {
+          resultWithImages = await getNewCarRecommendations(newData);
+        } catch (apiError) {
+          console.warn("AI new car mapping failed", apiError);
+          throw apiError;
+        }
       }
 
       if (resultWithImages.length === 0) {
@@ -174,7 +204,7 @@ const ConsultancyPage: React.FC<ConsultancyPageProps> = ({ listings = [] }) => {
 
       setResults(resultWithImages);
     } catch (e) {
-      setError('Sorry, something went wrong with the recommendation. Please try again.');
+      setError('Sorry, something went wrong with the recommendation. Please try again or adjust your filters.');
       console.error(e);
     } finally {
       setIsLoading(false);

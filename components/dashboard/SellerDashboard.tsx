@@ -1,4 +1,5 @@
 import React from 'react';
+import PerformanceAnalytics from './PerformanceAnalytics';
 
 interface SellerDashboardProps {
     onAddListingClick: () => void;
@@ -53,6 +54,12 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ onAddListingClick, li
                     </table>
                 </div>
             </div>
+
+            {/* Performance Analytics Section */}
+            <section>
+                <h2 className="text-3xl font-serif font-semibold mb-6">Performance Analytics</h2>
+                <PerformanceAnalytics listings={listings} />
+            </section>
 
             {/* PDI Bookings */}
             <div>

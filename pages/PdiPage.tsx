@@ -1,13 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import PdiPlanCard from '../components/PdiPlanCard';
+import emailjs from '@emailjs/browser';
 
 const PdiPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000); // Hide message after 5 seconds
+    setIsSubmitting(true);
+
+    if (!formRef.current) return;
+
+    try {
+      // TODO: Replace these placeholders with your actual EmailJS IDs
+      // Get them from https://dashboard.emailjs.com/
+      const serviceId = 'service_v4t994g'; 
+      const templateId = 'template_k4zcerq';
+      const publicKey = 'eelqj27hNfStnQh_h';
+
+      const formData = new FormData(formRef.current);
+      
+      // Formatting the form data to fit the generic {{message}} variable in your EmailJS template
+      const templateParams = {
+        title: 'New PDI Booking Request',
+        name: formData.get('name'),
+        email: formData.get('email'),
+        message: `
+Phone: ${formData.get('phone')}
+Car Model: ${formData.get('car_model')}
+Selected Plan: ${formData.get('plan')}
+Location: ${formData.get('location')}
+Date: ${formData.get('date')}
+        `
+      };
+
+      const response = await emailjs.send(
+        serviceId,
+        templateId,
+        templateParams,
+        publicKey
+      );
+
+      if (response.status === 200) {
+        setSubmitted(true);
+        formRef.current.reset();
+        setTimeout(() => setSubmitted(false), 5000);
+      }
+    } catch (error) {
+      console.error('EmailJS Error:', error);
+      alert("Something went wrong! Please check your EmailJS configuration.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -28,15 +74,15 @@ const PdiPage: React.FC = () => {
       {/* Booking Form */}
       <div className="max-w-4xl mx-auto bg-secondary p-10 rounded-2xl shadow-lg border border-white/10">
         <h2 className="text-4xl font-serif font-bold text-center mb-8">Book Your Inspection</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="text" placeholder="Your Name" required className="form-input" />
-            <input type="tel" placeholder="Phone Number" required className="form-input" />
+            <input type="text" name="name" placeholder="Your Name" required className="form-input" />
+            <input type="tel" name="phone" placeholder="Phone Number" required className="form-input" />
           </div>
-          <input type="email" placeholder="Email Address" required className="form-input" />
+          <input type="email" name="email" placeholder="Email Address" required className="form-input" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="text" placeholder="Car Model (e.g., Maruti Swift)" required className="form-input" />
-            <select required className="form-input">
+            <input type="text" name="car_model" placeholder="Car Model (e.g., Maruti Swift)" required className="form-input" />
+            <select name="plan" required className="form-input">
               <option value="">Select Plan</option>
               <option value="basic">Basic Plan</option>
               <option value="premium">Premium Plan</option>
@@ -44,11 +90,11 @@ const PdiPage: React.FC = () => {
             </select>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="text" placeholder="Inspection Location (City)" required className="form-input" />
-            <input type="date" required className="form-input text-text-secondary" />
+            <input type="text" name="location" placeholder="Inspection Location (City)" required className="form-input" />
+            <input type="date" name="date" required className="form-input text-text-secondary" />
           </div>
-          <button type="submit" className="w-full bg-accent hover:opacity-90 text-primary font-bold py-4 px-4 rounded-lg shadow-lg shadow-accent/20 transform transition-all duration-300 ease-in-out hover:scale-105">
-            Request PDI Booking
+          <button type="submit" disabled={isSubmitting} className="w-full bg-accent hover:opacity-90 text-primary font-bold py-4 px-4 rounded-lg shadow-lg shadow-accent/20 transform transition-all duration-300 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            {isSubmitting ? 'Submitting...' : 'Request PDI Booking'}
           </button>
         </form>
         {submitted && (

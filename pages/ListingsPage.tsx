@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import CarCard from '../components/CarCard';
 import ListingsFilter from '../components/ListingsFilter';
 import { UsedCarFormData } from '../types';
@@ -14,6 +15,7 @@ interface ListingsPageProps {
 const currentYear = new Date().getFullYear();
 
 const ListingsPage: React.FC<ListingsPageProps> = ({ listings, onAddListing }) => {
+    const [searchParams] = useSearchParams();
     const [filters, setFilters] = useState<Partial<UsedCarFormData>>({
         price: [0, 6000000],
         year: [2010, currentYear],
@@ -22,6 +24,17 @@ const ListingsPage: React.FC<ListingsPageProps> = ({ listings, onAddListing }) =
     const [isAddListingOpen, setIsAddListingOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCar, setSelectedCar] = useState<any | null>(null);
+
+    // Read ID from URL and auto-open it
+    useEffect(() => {
+        const idFromUrl = searchParams.get('id');
+        if (idFromUrl) {
+            const foundCar = listings.find(c => c.id.toString() === idFromUrl);
+            if (foundCar) {
+                setSelectedCar(foundCar);
+            }
+        }
+    }, [searchParams, listings]);
 
     const filteredListings = listings.filter(car =>
         car.title.toLowerCase().includes(searchQuery.toLowerCase())

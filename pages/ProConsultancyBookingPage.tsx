@@ -1,37 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
 
 const ProConsultancyBookingPage: React.FC = () => {
   const navigate = useNavigate();
   const [result, setResult] = useState<string>("");
   const [submitted, setSubmitted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
     setResult("Sending...");
-
-    const formData = new FormData(form);
-    // 👇 Your Web3Forms Access Key
-    formData.append("access_key", "a1a759f5-b0ff-427f-b4f1-1c056af28748");
+    
+    if (!formRef.current) return;
 
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData
-      });
+      // TODO: Replace these placeholders with your actual EmailJS IDs
+      // Get them from https://dashboard.emailjs.com/
+      const serviceId = 'service_v4t994g'; 
+      const templateId = 'template_k4zcerq';
+      const publicKey = 'eelqj27hNfStnQh_h';
 
-      const data = await response.json();
-      if (data.success) {
+      const formData = new FormData(formRef.current);
+      
+      const templateParams = {
+        title: 'New Pro Consultancy Booking',
+        name: formData.get('name'),
+        email: formData.get('email'),
+        message: `
+Phone: ${formData.get('phone')}
+Car Preference: ${formData.get('carPreference')}
+Car Type: ${formData.get('carType')}
+Budget Range: ${formData.get('budget')}
+Purpose: ${formData.get('purpose')}
+Additional Notes: ${formData.get('notes') || 'None'}
+        `
+      };
+
+      const response = await emailjs.send(
+        serviceId,
+        templateId,
+        templateParams,
+        publicKey
+      );
+
+      if (response.status === 200) {
         setResult("Form submitted successfully!");
-        form.reset();
+        formRef.current.reset();
         setSubmitted(true);
-      } else {
-        setResult("Error submitting form.");
       }
     } catch (error) {
-      console.error(error);
-      setResult("Something went wrong!");
+      console.error('EmailJS Error:', error);
+      setResult("Something went wrong! Please check your EmailJS configuration.");
     }
   };
 
@@ -59,7 +79,7 @@ const ProConsultancyBookingPage: React.FC = () => {
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-center text-text-primary mb-10">
               Book Your Personalized Car Consultancy Session
             </h1>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-text-secondary mb-2">Full Name</label>

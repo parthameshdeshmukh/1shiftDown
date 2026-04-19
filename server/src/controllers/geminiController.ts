@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import { GoogleGenAI, Type, Chat, Modality } from "@google/genai";
 
 const getAI = () => {
-    const key = process.env.API_KEY;
+    const key = process.env.GEMINI_API_KEY || process.env.API_KEY;
     if (!key) {
-        console.warn("API_KEY environment variable not set in server");
+        console.warn("GEMINI_API_KEY environment variable not set in server");
     }
     return new GoogleGenAI({ apiKey: key || '' });
 };
@@ -77,33 +77,47 @@ export const getNewCarRecommendations = async (req: Request, res: Response) => {
         const prompt = generateNewCarPrompt(formData);
 
         const ai = getAI();
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            makeModel: { type: Type.STRING },
-                            variant: { type: Type.STRING },
-                            price: { type: Type.STRING },
-                            mileage: { type: Type.STRING },
-                            reasons: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            link: { type: Type.STRING },
-                            topFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            matchScore: { type: Type.NUMBER },
-                            fuelType: { type: Type.STRING },
-                            bodyType: { type: Type.STRING },
-                            image: { type: Type.STRING },
+        const callApi = async (modelName: string) => {
+             return await ai.models.generateContent({
+                model: modelName,
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                makeModel: { type: Type.STRING },
+                                variant: { type: Type.STRING },
+                                price: { type: Type.STRING },
+                                mileage: { type: Type.STRING },
+                                reasons: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                link: { type: Type.STRING },
+                                topFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                matchScore: { type: Type.NUMBER },
+                                fuelType: { type: Type.STRING },
+                                bodyType: { type: Type.STRING },
+                                image: { type: Type.STRING },
+                            },
+                            required: ['makeModel', 'variant', 'price', 'mileage', 'reasons', 'link', 'topFeatures', 'matchScore', 'fuelType', 'bodyType', 'image'],
                         },
-                        required: ['makeModel', 'variant', 'price', 'mileage', 'reasons', 'link', 'topFeatures', 'matchScore', 'fuelType', 'bodyType', 'image'],
                     },
                 },
-            },
-        });
+            });
+        };
+
+        let response;
+        try {
+            response = await callApi("gemini-2.5-flash");
+        } catch (err: any) {
+             if (err?.message?.includes("503") || err?.message?.includes("overloaded") || err?.message?.includes("429") || err?.message?.includes("Quota")) {
+                  console.warn("gemini-2.5-flash overloaded or quota exceeded, falling back to gemini-flash-latest...");
+                  response = await callApi("gemini-flash-latest");
+             } else {
+                  throw err;
+             }
+        }
 
         let jsonStr = response.text ? response.text.trim() : "[]";
         if (jsonStr.startsWith('```json')) jsonStr = jsonStr.slice(7);
@@ -123,6 +137,7 @@ const generateUsedCarPrompt = (formData: UsedCarFormData): string => {
     return `
     You are a used car search aggregator for the Indian market.
     Find 3-5 real used car listings from platforms like Cars24, CarDekho, Spinny, and OLX based on these filters.
+    CRITICAL CONSTRAINT: You MUST ONLY return car listings that are physically located in "Mumbai" or "Navi Mumbai". Do not return cars from any other city.
     If a filter is blank or has an empty array, consider all options for it. Be strict with the filters that are provided.
     It is critical that the listed price for every result falls strictly within the provided price range.
 
@@ -135,8 +150,8 @@ const generateUsedCarPrompt = (formData: UsedCarFormData): string => {
     - Transmission: ${formData.transmission.length > 0 ? formData.transmission.join(', ') : 'Any'}
     - Max Kilometers Driven: Up to ${formData.kmsDriven.toLocaleString('en-IN')} km
     - Owner Count: ${formData.ownerCount.length > 0 ? formData.ownerCount.join(', ') : 'Any'}
-    - Location/City: ${formData.location || 'Any'}
-    - Registration State: ${formData.registrationState || 'Any'}
+    - Location/City: ${formData.location || 'Mumbai and Navi Mumbai'}
+    - Registration State: ${formData.registrationState || 'Maharashtra'}
     - Features: ${formData.features.length > 0 ? formData.features.join(', ') : 'Any'}
 
     For each listing, provide: make/model, variant, listed price (INR), platform, year, and kms driven.
@@ -153,32 +168,46 @@ export const getUsedCarListings = async (req: Request, res: Response) => {
         const prompt = generateUsedCarPrompt(formData);
 
         const ai = getAI();
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            makeModel: { type: Type.STRING },
-                            variant: { type: Type.STRING },
-                            price: { type: Type.STRING },
-                            platform: { type: Type.STRING },
-                            year: { type: Type.INTEGER },
-                            kmsDriven: { type: Type.STRING },
-                            matchScore: { type: Type.NUMBER },
-                            link: { type: Type.STRING },
-                            fuelType: { type: Type.STRING },
-                            image: { type: Type.STRING },
+        const callApi = async (modelName: string) => {
+             return await ai.models.generateContent({
+                model: modelName,
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                makeModel: { type: Type.STRING },
+                                variant: { type: Type.STRING },
+                                price: { type: Type.STRING },
+                                platform: { type: Type.STRING },
+                                year: { type: Type.INTEGER },
+                                kmsDriven: { type: Type.STRING },
+                                matchScore: { type: Type.NUMBER },
+                                link: { type: Type.STRING },
+                                fuelType: { type: Type.STRING },
+                                image: { type: Type.STRING },
+                            },
+                            required: ['makeModel', 'variant', 'price', 'platform', 'year', 'kmsDriven', 'matchScore', 'link', 'fuelType', 'image'],
                         },
-                        required: ['makeModel', 'variant', 'price', 'platform', 'year', 'kmsDriven', 'matchScore', 'link', 'fuelType', 'image'],
                     },
                 },
-            },
-        });
+            });
+        };
+
+        let response;
+        try {
+            response = await callApi("gemini-2.5-flash");
+        } catch (err: any) {
+             if (err?.message?.includes("503") || err?.message?.includes("overloaded") || err?.message?.includes("429") || err?.message?.includes("Quota")) {
+                  console.warn("gemini-2.5-flash overloaded or quota exceeded, falling back to gemini-flash-latest...");
+                  response = await callApi("gemini-flash-latest");
+             } else {
+                  throw err;
+             }
+        }
 
         let jsonStr = response.text ? response.text.trim() : "[]";
         if (jsonStr.startsWith('```json')) jsonStr = jsonStr.slice(7);
